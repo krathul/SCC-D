@@ -11,3 +11,8 @@ to_be_ignored/
 .cache
 compile_commands.json
 perf.data
+build/
+log/
+demo/
+dataset/
+test/

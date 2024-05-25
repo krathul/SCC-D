@@ -1,3 +1,10 @@
+
+#include "graph.h"
+
+#include <algorithm>
+#include <utility>
+#include <omp.h>
+
 int *con_scc_color_propagate(graph &g, int *valid, int *valid_verts,
                              int num_valid, unsigned int *scc_diff_outdeg_list,
                              int *scc_diff_out) {
@@ -7,7 +14,7 @@ int *con_scc_color_propagate(graph &g, int *valid, int *valid_verts,
   int *queue = new int[num_verts];
   int *queue_next = new int[num_verts];
 
-  copy(valid_verts, valid_verts + num_valid, queue);
+  std::copy(valid_verts, valid_verts + num_valid, queue);
 
   int *colors = new int[num_verts];
 #pragma omp parallel for schedule(static)
@@ -187,7 +194,7 @@ void con_scc_color_find_sccs(graph &g, int *&valid, int *colors, int *roots,
   // int num_verts = g.n;
   int *queue = new int[num_valid];
   int *queue_next = new int[num_valid];
-  copy(roots, roots + num_roots, queue);
+  std::copy(roots, roots + num_roots, queue);
   int queue_size = num_roots;
   int next_size = 0;
 
@@ -346,4 +353,79 @@ int con_scc_color(graph &g, int *&valid, int *&valid_verts, int *scc_maps,
   }
 
   return num_scc;
+}
+
+void insert_condense(graph &g, int *&scc_maps, int num_verts, int edges,
+                     int *&scc_outarr, int *&scc_inarr,
+                     unsigned int *&scc_outdegree_list,
+                     unsigned int *&scc_indegree_list, int &roots, int &C_edges,
+                     int *&scc_index, int *&inverse_scc,
+                     del_set &deleted_edges) {
+
+  /// making the csr for condensed graph
+  scc_index = new int[num_verts];   // scc_index[index] = representative scc
+  inverse_scc = new int[num_verts]; // inverse_scc[scc_root_node] = vertex in
+                                    // condensed graphs
+  int root_count = 0, i;
+  int condensed_edges = 0;
+  int *temp = new int[num_verts];
+  std::copy(scc_maps, scc_maps + num_verts, temp);
+  for (i = 0; i < num_verts; i++) {
+    if (temp[scc_maps[i]] == -1) {
+      continue;
+    } else {
+      scc_index[root_count] = scc_maps[i];
+      inverse_scc[scc_maps[i]] = root_count++;
+      temp[scc_maps[i]] = -1;
+    }
+  }
+  delete[] temp;
+  int *tscc_src = new int[edges];
+  int *tscc_dst = new int[edges];
+  for (i = 0; i < num_verts; i++) {
+    int *out_verts = out_vertices(g, i);
+    int out_deg = out_degree(g, i);
+    for (int j = 0; j < out_deg; j++) {
+      std::pair<int, int> temp = std::make_pair(i, out_verts[j]);
+      if ((deleted_edges.find(temp) == deleted_edges.end())) {
+        if (scc_maps[i] != scc_maps[out_verts[j]]) {
+          tscc_src[condensed_edges] = inverse_scc[scc_maps[i]];
+          tscc_dst[condensed_edges] = inverse_scc[scc_maps[out_verts[j]]];
+          condensed_edges++;
+        }
+      }
+    }
+  }
+  int *scc_src = new int[condensed_edges];
+  int *scc_dst = new int[condensed_edges];
+  std::copy(tscc_src, tscc_src + condensed_edges, scc_src);
+  std::copy(tscc_dst, tscc_dst + condensed_edges, scc_dst);
+  delete[] tscc_src;
+  delete[] tscc_dst;
+
+  create_csr(root_count, condensed_edges, scc_src, scc_dst, scc_outarr,
+                 scc_inarr, scc_outdegree_list, scc_indegree_list);
+
+  /////////////////////////
+  roots = root_count;
+  C_edges = condensed_edges;
+  delete[] scc_src;
+  delete[] scc_dst;
+}
+
+void condense_scc_update(graph &g, int *scc_maps, int *scc_index,
+                         int *inverse_scc, int *scc_diff_out, int *scc_diff_in,
+                         unsigned int *scc_diff_outdeg_list,
+                         unsigned int *scc_diff_indeg_list) {
+  int *valid = new int[g.n];
+  int *valid_verts = new int[g.n];
+  for (int i = 0; i < g.n; i++) {
+    valid[i] = 1;
+    valid_verts[i] = i;
+  }
+  con_scc_color(g, valid, valid_verts, scc_maps, scc_index, inverse_scc,
+                scc_diff_out, scc_diff_in, scc_diff_outdeg_list,
+                scc_diff_indeg_list);
+  delete[] valid;
+  delete[] valid_verts;
 }

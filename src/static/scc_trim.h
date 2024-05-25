@@ -43,6 +43,12 @@
 //@HEADER
 */
 
+#ifndef SCC_TRIM_H
+#define SCC_TRIM_H
+
+#include "graph.h"
+
+#include <omp.h>
 
 int scc_trim_none(graph& g, bool* valid,
   int* valid_verts, int& num_valid,
@@ -296,3 +302,4 @@ int scc_trim_complete(graph& g, bool* valid,
   return trim_count;
 }
 
+#endif

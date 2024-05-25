@@ -43,6 +43,12 @@
 //@HEADER
 */
 
+#ifndef SCC_VERIFY_H
+#define SCC_VERIFY_H
+
+#include "graph.h"
+
+#include <stdio.h>
 
 void scc_verify(graph& g, int* scc_maps)
 {
@@ -75,3 +81,5 @@ void scc_verify(graph& g, int* scc_maps)
 
   delete [] counts;
 }
+
+#endif

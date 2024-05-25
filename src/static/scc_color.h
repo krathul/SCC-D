@@ -43,6 +43,14 @@
 //@HEADER
 */
 
+#ifndef SCC_COLOR_H
+#define SCC_COLOR_H
+
+#include "graph.h"
+
+#include <algorithm>
+#include <omp.h>
+
 int *scc_color_propagate(graph &g, bool *valid, int *valid_verts,
                          int num_valid) {
   int num_verts = g.n;
@@ -50,7 +58,7 @@ int *scc_color_propagate(graph &g, bool *valid, int *valid_verts,
   bool *in_queue_next = new bool[num_verts];
   int *queue = new int[num_verts];
   int *queue_next = new int[num_verts];
-  copy(valid_verts, valid_verts + num_valid, queue);
+  std::copy(valid_verts, valid_verts + num_valid, queue);
 
   int *colors = new int[num_verts];
 #pragma omp parallel for schedule(static)
@@ -200,7 +208,7 @@ void scc_color_find_sccs(graph &g, bool *valid, int *colors, int *roots,
   int num_verts = g.n;
   int *queue = new int[num_valid];
   int *queue_next = new int[num_valid];
-  copy(roots, roots + num_roots, queue);
+  std::copy(roots, roots + num_roots, queue);
   int queue_size = num_roots;
   int next_size = 0;
 
@@ -330,3 +338,5 @@ int scc_color(graph &g, bool *valid, int *&valid_verts, int &num_valid,
 
   return num_scc;
 }
+
+#endif

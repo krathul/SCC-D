@@ -43,6 +43,12 @@
 //@HEADER
 */
 
+#ifndef SCC_FWBW_H
+#define SCC_FWBW_H
+
+#include "graph.h"
+
+#include <omp.h>
 
 bool* scc_fwbw_fw(graph& g, bool* valid, 
   int* valid_verts, int num_valid,
@@ -511,3 +517,6 @@ int scc_fwbw(graph& g, bool* valid,
 
   return num_scc;
 }
+
+
+#endif
