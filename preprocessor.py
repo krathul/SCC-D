@@ -8,11 +8,11 @@ if __name__ == '__main__':
     vertex_cnt = 0
     edge_cnt = 0
 
-    with open("dataset/temp", "w") as f:
+    with open("test/temp", "w") as f:
         subprocess.run(["gunzip", "-c", sys.argv[1]], stdout=f)
     save_file = open(sys.argv[1].split('.')[0], "w")
 
-    with open("dataset/temp") as input, open("dataset/temp1", "w") as output:
+    with open("test/temp") as input, open("test/temp1", "w") as output:
         for line in input:
             if '#' in line:
                 continue
@@ -35,10 +35,10 @@ if __name__ == '__main__':
                 edge_cnt += 1
         save_file.write("#" + str(vertex_cnt) + "," + str(edge_cnt) + "\n")
 
-    with open("dataset/temp1", "r") as output:
+    with open("test/temp1", "r") as output:
         for line in output:
             save_file.write(line)
 
-    os.remove("dataset/temp")
-    os.remove("dataset/temp1")
+    os.remove("test/temp")
+    os.remove("test/temp1")
     save_file.close()
