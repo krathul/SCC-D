@@ -1,16 +1,4 @@
-cc*
-test*
-results_dump
-.gdb_history
-scc
-*txt
-*sh
-decremental_cpu.cpp
-to_do_list
-to_be_ignored/
-.cache
 compile_commands.json
-perf.data
 build/
 log/
 demo/
